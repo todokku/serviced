@@ -14,6 +14,7 @@
 package auth
 
 import (
+	"fmt"
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -63,7 +64,9 @@ func ParseJWTIdentity(token string) (Identity, error) {
 		return GetMasterPublicKey()
 	})
 	if err != nil {
+		fmt.Printf("parsing token err: %v\n", err)
 		if verr, ok := err.(*jwt.ValidationError); ok {
+			fmt.Printf("token not valid err: %v\n", verr)
 			if verr.Errors&jwt.ValidationErrorExpired != 0 {
 				return nil, ErrIdentityTokenExpired
 			}

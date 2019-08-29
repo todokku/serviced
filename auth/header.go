@@ -20,6 +20,7 @@ import (
 	"io"
 	"io/ioutil"
 	"time"
+	"fmt"
 
 	jwt "github.com/dgrijalva/jwt-go"
 )
@@ -233,6 +234,7 @@ func ReadAuthHeader(r io.Reader) (sender Identity, timestamp time.Time, payload 
 	var m magicNumber
 	err = binary.Read(r, byteOrder, &m)
 	if err != nil {
+		fmt.Printf("m err: %v\n", err)
 		return
 	}
 	if m != MagicNumber {
@@ -244,6 +246,7 @@ func ReadAuthHeader(r io.Reader) (sender Identity, timestamp time.Time, payload 
 	var pv protocolVersion
 	err = binary.Read(r, byteOrder, &pv)
 	if err != nil {
+		fmt.Printf("pv err: %v\n", err)
 		return
 	}
 
@@ -253,6 +256,7 @@ func ReadAuthHeader(r io.Reader) (sender Identity, timestamp time.Time, payload 
 	case ProtocolVersion:
 		return readAuthHeaderV1(r)
 	}
+
 	err = ErrUnknownAuthProtocol
 	return
 }
@@ -303,6 +307,7 @@ func readAuthHeaderV1(r io.Reader) (sender Identity, tstamp time.Time, payload [
 	}
 	sender, err = ParseJWTIdentity(string(token))
 	if err != nil {
+		fmt.Printf("ParseJWTIdentity err: %v\n", r)
 		err = eatBytesAndGetPayloadError(teed, 0, err)
 		return
 	}
