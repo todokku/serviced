@@ -28,13 +28,12 @@ import (
 
 // statReporter perically collects statistics at the given
 // interval until the closing channel closes
-func statReporter(statsUrl string, interval time.Duration) {
-
+func statReporter(statsUrl string, interval time.Duration, f func(ts time.Time, statsUrl string)) {
 	tick := time.Tick(interval)
 	for {
 		select {
 		case t := <-tick:
-			collect(t, statsUrl)
+			f(t, statsUrl)
 		}
 	}
 }
@@ -144,4 +143,54 @@ func getOpenConnections(fileLoc string) (openConns int, err error) {
 		}
 	}
 	return openConns, scanner.Err()
+}
+
+
+// SRE-42 collect amount of user threads and their NPROC limits.
+func collectNprocLimits(ts time.Time, statsUrl string) {
+	const username = "zenoss"
+	now := ts.Unix()
+	samples := make([]stats.Sample, 3)
+
+	uid, err := stats.UserIDLookup(username)
+	if err != nil {
+		glog.Errorf("Could not get uid of %s user: %s", username, err)
+		return
+	}
+
+	threads, err := stats.TotalThreadsNumberByUser(uid)
+	if err == nil {
+		samples[0] = stats.Sample{
+			Metric:    "user.threads",
+			Value:     strconv.FormatUint(uint64(threads), 10),
+			Timestamp: now,
+			Tags:      map[string]string{"uid": strconv.FormatUint(uint64(uid), 10)},
+		}
+	} else {
+		glog.Errorf("Could not collect threads: %s", err)
+	}
+
+	soft, hard, err := stats.GetLimits(username)
+	if err == nil {
+		samples[1] = stats.Sample{
+			Metric:    "user.nproc.soft",
+			Value:     strconv.FormatUint(uint64(soft), 10),
+			Timestamp: now,
+			Tags:      map[string]string{"uid": strconv.FormatUint(uint64(uid), 10)},
+		}
+
+		samples[2] = stats.Sample{
+			Metric:    "user.nproc.hard",
+			Value:     strconv.FormatUint(uint64(hard), 10),
+			Timestamp: now,
+			Tags:      map[string]string{"uid": strconv.FormatUint(uint64(uid), 10)},
+		}
+	} else {
+		glog.Errorf("Could not collect NPROC: %s", err)
+	}
+
+	glog.V(4).Infof("posting samples: %+v", samples)
+	if err := stats.Post(statsUrl, samples); err != nil {
+		glog.Errorf("could not post stats: %s", err)
+	}
 }
