@@ -92,6 +92,15 @@ var (
 					domain.Metric{ID: "Serviced.OpenFileDescriptors", Name: "OpenFileDescriptors", Unit: "Open File Descriptors"},
 				},
 			},
+			//Threads
+			domain.MetricConfig{
+				ID:          "user.threads.total",
+				Name:        "User threads",
+				Description: "user threads",
+				Metrics: []domain.Metric{
+					domain.Metric{ID: "user.totalthreads", Name: "User threads", Unit: "threads"},
+				},
+			},
 		},
 		ThresholdConfigs: []domain.ThresholdConfig{
 			domain.ThresholdConfig{
@@ -107,6 +116,21 @@ var (
 					"Resolution":  "Increase swap or memory",
 					"Explanation": "Ran out of all available memory space",
 					"EventClass":  "/Perf/Memory",
+				},
+			},
+			domain.ThresholdConfig{
+				ID:           "user.nproc.limit",
+				Name:         "The soft limit of zenoss user",
+				Description:  "Alert when amount of threads reaches the limit",
+				MetricSource: "user",
+				DataPoints:   []string{"user.threads.total"},
+				Type:         "MinMax",
+				Threshold:    domain.MinMaxThreshold{Min: "0", Max: "4096"},
+				EventTags: map[string]interface{}{
+					"Severity":    1,
+					"Resolution":  "Increase limits or check if some instances made more threads than necessary",
+					"Explanation": "Ran out of NPROC limits, all containers cannot spawn any threads for this user",
+					"EventClass":  "/Status/ControlCenter",
 				},
 			},
 		},
@@ -711,5 +735,40 @@ func newThinPoolMetadataUsageGraph(tags map[string][]string) domain.GraphConfig 
 		Tags:        tags,
 		Units:       "Bytes",
 		Description: "Thin Pool Metadata Usage",
+	}
+}
+
+
+func newThreadsGraph(tags map[string][]string) domain.GraphConfig {
+	return domain.GraphConfig{
+		DataPoints: []domain.DataPoint{
+			domain.DataPoint{
+				Aggregator:   "avg",
+				ID:           "user.totalthreads",
+				Color:        "#aec7e8",
+				Fill:         false,
+				Format:       "%4.2f",
+				Legend:       "zenoss user",
+				Metric:       "user.totalthreads",
+				MetricSource: "user",
+				Name:         "zenoss user",
+				Type:         "line",
+			},
+		},
+		ID:     "user.totalthreads",
+		Name:   "User threads",
+		Footer: false,
+		Format: "%.2f",
+		MinY:   &zero,
+		Range: &domain.GraphConfigRange{
+			End:   "0s-ago",
+			Start: "1h-ago",
+		},
+		YAxisLabel:  "threads",
+		ReturnSet:   "EXACT",
+		Type:        "area",
+		Tags:        tags,
+		Units:       "threads",
+		Description: "Amount of user threads",
 	}
 }

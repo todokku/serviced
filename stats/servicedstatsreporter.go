@@ -347,4 +347,10 @@ func (sr *ServicedStatsReporter) updateHostStats() {
 	} else {
 		metrics.GetOrRegisterGauge("Serviced.OpenFileDescriptors", sr.hostRegistry).Update(openFileDescriptorCount)
 	}
+
+	if threads, err := TotalThreadsNumberByUser(1001); err != nil {
+		plog.WithError(err).Warn("Couldn't get number of threads for zenoss user")
+	} else {
+		metrics.GetOrRegisterGauge("user.totalthreads", sr.hostRegistry).Update(int64(threads))
+	}
 }
