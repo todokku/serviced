@@ -125,6 +125,7 @@ var (
 				MetricSource: "user",
 				DataPoints:   []string{"user.threads.total"},
 				Type:         "MinMax",
+				// I've hardcoded Max limit for testing purposes. DON'T add this branch to develop branch
 				Threshold:    domain.MinMaxThreshold{Min: "0", Max: "4096"},
 				EventTags: map[string]interface{}{
 					"Severity":    1,

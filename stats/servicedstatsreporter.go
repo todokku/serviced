@@ -348,6 +348,7 @@ func (sr *ServicedStatsReporter) updateHostStats() {
 		metrics.GetOrRegisterGauge("Serviced.OpenFileDescriptors", sr.hostRegistry).Update(openFileDescriptorCount)
 	}
 
+	// I've hardcoded user id for testing purposes. DON'T add this branch to develop branch
 	if threads, err := TotalThreadsNumberByUser(1001); err != nil {
 		plog.WithError(err).Warn("Couldn't get number of threads for zenoss user")
 	} else {
