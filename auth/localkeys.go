@@ -136,6 +136,7 @@ func verifyMasterSignatureAsMaster(message, signature []byte) error {
 	mKeyLock.RLock()
 	defer mKeyLock.RUnlock()
 	if masterKeys.public == nil {
+		log.Info("masterKeys.public == nil in verifyMasterSignatureAsMaster")
 		return ErrNoPublicKey
 	}
 	return masterKeys.Verify(message, signature)
@@ -154,6 +155,7 @@ func GetMasterPublicKey() (crypto.PublicKey, error) {
 	dKeyCond.RLock()
 	defer dKeyCond.RUnlock()
 	if delegateKeys.masterPublic == nil {
+		log.Info("delegateKeys.masterPublic == nil")
 		return nil, ErrNoPublicKey
 	}
 	return delegateKeys.masterPublic, nil
@@ -163,6 +165,7 @@ func getMasterPublicKeyAsMaster() (crypto.PublicKey, error) {
 	mKeyLock.RLock()
 	defer mKeyLock.RUnlock()
 	if masterKeys.public == nil {
+		log.Info("masterKeys.public == nil")
 		return nil, ErrNoPublicKey
 	}
 	return masterKeys.public, nil
@@ -181,7 +184,11 @@ func getMasterPrivateKey() (crypto.PrivateKey, error) {
 func LoadDelegateKeysFromFile(filename string) error {
 	pub, priv, err := LoadKeyPairFromFile(filename)
 	if err != nil {
+		log.Info("err in LoadDelegateKeysFromFile: %s", err)
 		return err
+	}
+	if pub == nil {
+		log.Info("pub == nil in LoadDelegateKeysFromFile")
 	}
 	updateDelegateKeys(pub, priv)
 	return nil
@@ -191,6 +198,9 @@ func LoadDelegateKeysFromFile(filename string) error {
 func LoadMasterKeys(public crypto.PublicKey, private crypto.PrivateKey) {
 	mKeyLock.Lock()
 	defer mKeyLock.Unlock()
+	if public == nil {
+		log.Info("public == nil in LoadMasterKeys")
+	}
 	masterKeys = MasterKeys{public, private}
 }
 
@@ -276,7 +286,11 @@ func LoadCommonRSAKeyPairPEM(headers map[string]string) (public []byte, private 
 func LoadDelegateKeysFromPEM(public, private []byte) error {
 	pub, priv, err := LoadRSAKeyPair(public, private)
 	if err != nil {
+		log.Info("err in LoadDelegateKeysFromPEM: %s", err)
 		return err
+	}
+	if pub == nil {
+		log.Info("pub == nil in LoadDelegateKeysFromPEM")
 	}
 	updateDelegateKeys(pub, priv)
 	return nil
@@ -287,11 +301,15 @@ func LoadDelegateKeysFromPEM(public, private []byte) error {
 func LoadMasterKeysFromPEM(public, private []byte) error {
 	pub, priv, err := LoadRSAKeyPair(public, private)
 	if err != nil {
+		log.Info("err in LoadMasterKeysFromPEM: %s", err)
 		return err
 	}
 
 	mKeyLock.Lock()
 	defer mKeyLock.Unlock()
+	if pub == nil {
+		log.Info("pub == nil in LoadMasterKeysFromPEM")
+	}
 	masterKeys = MasterKeys{pub, priv}
 	return nil
 }
@@ -430,6 +448,9 @@ func RegisterRemoteHost(hostID string, nat utils.URL, hostIPAddr string, keydata
 
 func updateDelegateKeys(pub crypto.PublicKey, priv crypto.PrivateKey) {
 	dKeyCond.Lock()
+	if pub == nil {
+		log.Info("pub == nil in updateDelegateKeys")
+	}
 	delegateKeys = HostKeys{pub, priv}
 	dKeyCond.Unlock()
 	dKeyCond.Broadcast()

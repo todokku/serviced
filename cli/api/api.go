@@ -203,6 +203,7 @@ func (a *api) authenticateHost() error {
 	// Load the delegate keys
 	delegateKeyFile := filepath.Join(options.EtcPath, auth.DelegateKeyFileName)
 	if err := auth.LoadDelegateKeysFromFile(delegateKeyFile); err != nil {
+		log.Info("err in authenticateHost: %s", err)
 		return err
 	}
 
