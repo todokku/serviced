@@ -672,7 +672,26 @@ func (c *Controller) Run() (err error) {
 	if os.Getenv("SERVICED_IS_SERVICE_SHELL") != "true" {
 		c.kickOffHealthChecks(healthExit)
 	}
-
+	//protocol := "udp"
+	//if err := node.FlushConntrack(protocol); err != nil {
+	//	plog.WithError(err).WithFields(log.Fields{
+	//		"protocol": protocol,
+	//	}).Warn("Unable to flush conntrack table")
+	//}
+	glog.Infof("before CONNTRACK dirty fix")
+	instanceID, err := strconv.Atoi(c.options.Service.InstanceID)
+	myservice, _, _, err := getService(c.options.ServicedEndpoint, c.options.Service.ID, instanceID)
+	glog.Infof("SERVICE NAME: %s", myservice.Name)
+	if (myservice.Name == "zentrap" || myservice.Name == "zenmail" || myservice.Name == "syslog") {
+		cmd := exec.Command("conntrack", "-D -p udp --dport=162")
+		output, err := cmd.Output()
+		if err != nil {
+			glog.Infof("err: %s", err)
+		} else {
+			glog.Infof("output: %s", output)
+		}
+	}
+	glog.Infof("before exited := false")
 	exited := false
 
 	var shutdownService = func(service *subprocess.Instance, sig os.Signal) {
