@@ -137,7 +137,7 @@ type Options struct {
 	Auth0Group                 []string          // Group membership(s) required in Auth0 token for login, comma separated list
 	Auth0ClientID              string            // ClientID of Auth0 Application
 	Auth0Scope                 string            // Auth0 Scope for request.
-	KeyProxyJsonServer         string            // Address of api-key-server endpoint for getting CC Access tokens
+	KeyProxySessionService         string        // Address of session-svc endpoint for getting CC Access tokens
 	KeyProxyListenPort         string            // Port where api-key-proxy will listen
 
 }

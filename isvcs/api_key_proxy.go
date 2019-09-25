@@ -55,11 +55,6 @@ func initApiKeyProxy() {
 		HostPort:       getKeyProxyPort(),
 	}
 
-	keyServerReachableHealthCheck := healthCheckDefinition{
-		healthCheck: SetKeyServerReachableHealthCheck(),
-		Interval:    DEFAULT_HEALTHCHECK_INTERVAL,
-		Timeout:     DEFAULT_HEALTHCHECK_TIMEOUT,
-	}
 	keyProxyAnsweringHealthCheck := healthCheckDefinition{
 		healthCheck: SetKeyProxyAnsweringHealthCheck(),
 		Interval:    DEFAULT_HEALTHCHECK_INTERVAL,
@@ -68,7 +63,6 @@ func initApiKeyProxy() {
 
 	healthChecks := []map[string]healthCheckDefinition{
 		map[string]healthCheckDefinition{
-			"API Key Server Reachable": keyServerReachableHealthCheck,
 			"API Key Proxy Answering":  keyProxyAnsweringHealthCheck,
 		},
 	}
@@ -88,30 +82,6 @@ func initApiKeyProxy() {
 	apiKeyProxy, err = NewIService(ApiKeyProxy)
 	if err != nil {
 		log.WithError(err).Fatal("Unable to initialize API Key Server internal service container")
-	}
-}
-
-func SetKeyServerReachableHealthCheck() HealthCheckFunction {
-	return func(halt <-chan struct{}) error {
-		logger := log.WithFields(logrus.Fields{"HealthCheckName": API_KEY_PROXY_SERVER_HEALTHCHECK_NAME})
-		TestURL := config.GetOptions().KeyProxyJsonServer + "RUOK"
-		for {
-			select {
-			case <-halt:
-				logger.Debug("Stopped health checks for API Key Proxy Server")
-				return nil
-			default:
-				if err := CheckURL(TestURL); err != nil {
-					logger.WithError(err).
-						WithFields(logrus.Fields{"TestURL": TestURL}).
-						Debug("Bad response from Key server.")
-					time.Sleep(1 * time.Second)
-					continue
-				}
-				logger.Debug("API Key Server checked in healthy")
-				return nil
-			}
-		}
 	}
 }
 
@@ -140,9 +110,9 @@ func SetKeyProxyAnsweringHealthCheck() HealthCheckFunction {
 						logger.WithError(err).
 							WithFields(logrus.Fields{
 								"TestURL":                       TestURL,
-								"SERVICED_KEYPROXY_JSON_SERVER": config.GetOptions().KeyProxyJsonServer,
+								"SERVICED_KEYPROXY_SESSION_SERVICE": config.GetOptions().KeyProxySessionService,
 							}).
-							Info("Error connecting to Serviced API server. Verify that SERVICED_KEYPROXY_JSON_SERVER is set properly and that the server is running.")
+							Info("Error connecting to Serviced API server. Verify that SERVICED_KEYPROXY_SESSION_SERVICE is set properly and that the server is running.")
 					}
 					time.Sleep(1 * time.Second)
 					continue

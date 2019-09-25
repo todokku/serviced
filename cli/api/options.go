@@ -204,7 +204,7 @@ func GetDefaultOptions(cfg utils.ConfigReader) config.Options {
 		Auth0ClientID: cfg.StringVal("AUTH0_CLIENT_ID", ""),
 		Auth0Scope:    cfg.StringVal("AUTH0_SCOPE", ""),
 		// Parameters for api-key-proxy isvc configuration
-		KeyProxyJsonServer: cfg.StringVal("KEYPROXY_JSON_SERVER", ""),
+		KeyProxySessionService: cfg.StringVal("KEYPROXY_SESSION_SERVICE", ""),
 		KeyProxyListenPort: cfg.StringVal("KEYPROXY_LISTEN_PORT", ":6443"),
 	}
 

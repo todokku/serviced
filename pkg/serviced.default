@@ -310,8 +310,8 @@
 # Client ID for Auth0 application object (https://manage.auth0.com/#/applications)
 # SERVICED_AUTH0_CLIENT_ID=
 
-# Address of server for API keys (http://${JSON_API_ILB_IP}:9090/ccAccessToken)
-# SERVICED_KEYPROXY_JSON_SERVER=
+# Address of service for exchanging session ids for access tokens (http://${SESSION_SVC_ILB_IP}:9090)
+# SERVICED_KEYPROXY_SESSION_SERVICE=
 
 # Enable or disable key proxy server (only applicable where proxy server is running)
 # SERVICED_START_API_KEY_PROXY=false

@@ -41,7 +41,7 @@ const (
 	OTSDB_BT_REPO      = "zenoss/isvcs-metrics-bigtable"
 	OTSDB_BT_TAG       = "v1"
 	API_KEY_PROXY_REPO = "gcr.io/zing-registry-188222/api-key-proxy"
-	API_KEY_PROXY_TAG  = "2018-08-01-1"
+	API_KEY_PROXY_TAG  = "zing5117"
 )
 
 type IServiceHealthResult struct {
@@ -191,15 +191,15 @@ func setIsvcsEnv() error {
 			return ErrNoDockerIP
 		}
 		proxyToAddr := fmt.Sprintf("https://%s:%s", apiIp, strings.TrimLeft(options.UIPort, ":"))
-		if options.KeyProxyJsonServer == "" {
-			return errors.New("Configuration error: SERVICED_KEYPROXY_JSON_SERVER must be set if SERVICED_START_API_KEY_PROXY is true.")
+		if options.KeyProxySessionService == "" {
+			return errors.New("Configuration error: SERVICED_KEYPROXY_SESSION_SERVICE must be set if SERVICED_START_API_KEY_PROXY is true.")
 		}
 		apiProxyVars := []string{
 			"api-key-proxy:KEYPROXY_PROXY_LISTENER_PORT=" + options.KeyProxyListenPort,
 			"api-key-proxy:KEYPROXY_PROXY_LOCATION_USES_TLS=true",
 			"api-key-proxy:KEYPROXY_SERVE_TLS=true",
 			fmt.Sprintf("api-key-proxy:KEYPROXY_ZPROXY_LOCATION=%s", proxyToAddr),
-			fmt.Sprintf("api-key-proxy:KEYPROXY_JSON_SERVER=%s", options.KeyProxyJsonServer),
+			fmt.Sprintf("api-key-proxy:KEYPROXY_SESSION_SVC=%s", options.KeyProxySessionService),
 		}
 		for _, val := range apiProxyVars {
 			if err := AddEnv(val); err != nil {

@@ -162,7 +162,7 @@ func New(driver api.API, config utils.ConfigReader, logControl logging.LogContro
 		cli.StringSliceFlag{"auth0-group", convertToStringSlice(defaultOps.Auth0Group), "Group(s) configured for application in Auth0. A comma-separated list."},
 		cli.StringFlag{"auth0-client-id", defaultOps.Auth0ClientID, "Client ID of Auth0 application"},
 		cli.StringFlag{"auth0-scope", defaultOps.Auth0Scope, "Scope to request in Auth0"},
-		cli.StringFlag{"keyproxy-json-server", defaultOps.KeyProxyJsonServer, "URL for API key server (cc auth token endpoint)"},
+		cli.StringFlag{"keyproxy-session-service", defaultOps.KeyProxySessionService, "URL for Session Service (cc auth token endpoint)"},
 		cli.StringFlag{"keyproxy-listen-port", defaultOps.KeyProxyListenPort, "Port for API key proxy to listen on"},
 		cli.BoolFlag{"no-prefix-match", "Make matches on SERVICEID by name strictly 'ends-with' rather than 'contains'"},
 	}
@@ -320,7 +320,7 @@ func getRuntimeOptions(cfg utils.ConfigReader, ctx *cli.Context) config.Options 
 		Auth0Group:                 ctx.GlobalStringSlice("auth0-group"),
 		Auth0ClientID:              ctx.String("auth0-client-id"),
 		Auth0Scope:                 ctx.String("auth0-scope"),
-		KeyProxyJsonServer:         ctx.String("keyproxy-json-server"),
+		KeyProxySessionService:         ctx.String("keyproxy-session-service"),
 		KeyProxyListenPort:         ctx.String("keyproxy-listen-port"),
 	}
 
