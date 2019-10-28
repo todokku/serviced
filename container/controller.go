@@ -139,6 +139,7 @@ func (c *Controller) Close() error {
 
 // getService retrieves a service
 func getService(lbClientPort string, serviceID string, instanceID int) (*service.Service, string, string, error) {
+	plog.Info("<<< node.NewLBClient >>>")
 	client, err := node.NewLBClient(lbClientPort)
 	if err != nil {
 		glog.Errorf("Could not create a client to endpoint: %s, %s", lbClientPort, err)
@@ -147,6 +148,7 @@ func getService(lbClientPort string, serviceID string, instanceID int) (*service
 	defer client.Close()
 
 	var evaluatedServiceResponse node.EvaluateServiceResponse
+	plog.Info("<<< client.GetEvaluatedService >>>")
 	err = client.GetEvaluatedService(node.EvaluateServiceRequest{serviceID, instanceID}, &evaluatedServiceResponse)
 
 	if err != nil {
@@ -278,6 +280,7 @@ func NewController(options ControllerOptions) (*Controller, error) {
 	}
 	c.closing = make(chan chan error)
 
+	plog.Info("<<< check ServicedEndpoint len>>>")
 	if len(options.ServicedEndpoint) <= 0 {
 		return nil, ErrInvalidEndpoint
 	}
@@ -307,6 +310,7 @@ func NewController(options ControllerOptions) (*Controller, error) {
 		glog.Errorf("Invalid instance from instanceID:%s", options.Service.InstanceID)
 		return c, fmt.Errorf("Invalid instance from instanceID:%s", options.Service.InstanceID)
 	}
+	plog.Info("<<< getService >>>")
 	service, tenantID, svcPath, err := getService(options.ServicedEndpoint, options.Service.ID, instanceID)
 	if err != nil {
 		glog.Errorf("%+v", err)
@@ -317,9 +321,11 @@ func NewController(options ControllerOptions) (*Controller, error) {
 	c.tenantID = tenantID
 	options.ServiceNamePath = svcPath
 
+	plog.Info("<<< service.PIDFile >>>")
 	if service.PIDFile != "" {
 		if strings.HasPrefix(service.PIDFile, "exec ") {
 			cmd := service.PIDFile[5:len(service.PIDFile)]
+			plog.Info("<<< exec.Command >>>")
 			out, err := exec.Command("sh", "-c", cmd).Output()
 			if err != nil {
 				glog.Errorf("Unable to run command '%s'", cmd)
@@ -330,7 +336,7 @@ func NewController(options ControllerOptions) (*Controller, error) {
 			c.PIDFile = service.PIDFile
 		}
 	}
-
+	plog.Info("<<< setupConfigFiles >>>")
 	// create config files
 	if err := setupConfigFiles(service); err != nil {
 		glog.Errorf("Could not setup config files error:%s", err)
@@ -338,12 +344,14 @@ func NewController(options ControllerOptions) (*Controller, error) {
 	}
 
 	// get host id
+	plog.Info("<<< getAgentHostID >>>")
 	c.hostID, err = getAgentHostID(options.ServicedEndpoint)
 	if err != nil {
 		glog.Errorf("Invalid hostID")
 		return c, ErrInvalidHostID
 	}
 
+	plog.Info("<<< options.Logforwarder.Enabled >>>")
 	if options.Logforwarder.Enabled && len(service.LogConfigs) > 0 {
 		if err := setupLogstashFiles(c.hostID, options.HostIPs, options.ServiceNamePath, service,
 			options.Service.InstanceID, options.Logforwarder); err != nil {
@@ -351,6 +359,7 @@ func NewController(options ControllerOptions) (*Controller, error) {
 			return c, fmt.Errorf("container: invalid LogStashFiles error:%s", err)
 		}
 
+		plog.Info("<<< logforwarder subprocess.New >>>")
 		logforwarder, exited, err := subprocess.New(time.Second,
 			nil,
 			options.Logforwarder.Path,
@@ -386,6 +395,7 @@ func NewController(options ControllerOptions) (*Controller, error) {
 		metricRedirect += "&controlplane_instance_id=" + options.Service.InstanceID
 
 		//build and serve the container metric forwarder
+		plog.Info("<<< NewMetricForwarder >>>")
 		forwarder, err := NewMetricForwarder(options.Metric.Address, metricRedirect)
 		if err != nil {
 			return c, err
@@ -402,6 +412,7 @@ func NewController(options ControllerOptions) (*Controller, error) {
 	c.prereqs = service.Prereqs
 
 	// set up the zookeeper client
+	plog.Info("<<< getAgentZkInfo >>>")
 	c.zkInfo, err = getAgentZkInfo(options.ServicedEndpoint)
 	if err != nil {
 		glog.Errorf("Invalid zk info: %v", err)
@@ -411,12 +422,14 @@ func NewController(options ControllerOptions) (*Controller, error) {
 
 	// endpoints are created at the root level (not pool aware)
 	rootBasePath := ""
+	plog.Info("<<< coordclient.New >>>")
 	zClient, err := coordclient.New("zookeeper", c.zkInfo.ZkDSN, rootBasePath, nil)
 	if err != nil {
 		glog.Errorf("failed create a new coordclient: %v", err)
 		return c, err
 	}
 
+	plog.Info("<<< zzk.InitializeLocalClient >>>")
 	zzk.InitializeLocalClient(zClient)
 
 	// get endpoints
@@ -429,12 +442,15 @@ func NewController(options ControllerOptions) (*Controller, error) {
 		UseTLS:               !options.Mux.DisableTLS,
 		VirtualAddressSubnet: options.VirtualAddressSubnet,
 	}
+
+	plog.Info("<<< NewContainerEndpoints >>>")
 	c.endpoints, err = NewContainerEndpoints(service, opts)
 	if err != nil {
 		return c, err
 	}
 
 	// CC Rest API proxy
+	plog.Info("<<< newServicedApiProxy >>>")
 	c.ccApiProxy = newServicedApiProxy()
 
 	// check command
