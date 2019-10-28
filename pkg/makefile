@@ -156,8 +156,8 @@ stage_tgz: build
 deb: stage_deb
 	fpm \
 		-n $(FULL_NAME) \
-		-v $(PKG_VERSION)~$$(lsb_release -cs) \
-		--iteration $(ITERATION) \
+		-v $(PKG_VERSION) \
+		--iteration 366 \
 		-s dir \
 		-d nfs-kernel-server \
 		-d net-tools \
