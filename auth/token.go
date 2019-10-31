@@ -196,6 +196,7 @@ func WatchTokenFile(tokenfile string, done <-chan interface{}) error {
 			"tokenfile": tokenfile,
 		})
 
+		log.Info("<<< LoadTokenFile >>>")
 		if err := LoadTokenFile(tokenfile); err != nil {
 			log.WithError(err).Warn("Unable to load authentication token from file.")
 		} else {
@@ -222,11 +223,13 @@ func WatchTokenFile(tokenfile string, done <-chan interface{}) error {
 
 func LoadTokenFile(tokenfile string) error {
 	data, err := ioutil.ReadFile(tokenfile)
+	log.Info("<<< end ioutil.ReadFile >>>")
 	if err != nil {
 		return err
 	}
 	// No need to handle expires or save file, because we're loading from the file rather
 	// than re-requesting authentication tokens
+	log.Info("<<< updateToken >>>")
 	updateToken(string(data), zerotime, "")
 	return nil
 }
@@ -267,10 +270,13 @@ func updateToken(token string, expires time.Time, filename string) {
 		return
 	}
 	cond.Lock()
+	log.Infof("<<< set currentToken to '%s' >>>", token)
 	currentToken = token
+	log.Info("<<< getIdentityFromToken >>>")
 	currentIdentity = getIdentityFromToken(token)
 	expiration = expires
 	if filename != "" {
+		log.Infof("<<< ioutil.WriteFile %s >>>", filename)
 		ioutil.WriteFile(filename, []byte(token), 0660)
 	}
 	cond.Unlock()
