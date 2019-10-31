@@ -38,11 +38,13 @@ func NotifyOnChange(filename string, ops fsnotify.Op, cancel <-chan interface{})
 		for {
 			select {
 			case e := <-w.Events:
+				log.Info("<<< Receive event >>>")
 				if filepath.Clean(e.Name) == filename && e.Op&ops != 0 {
+					log.Info("<<< Post to outchan >>>")
 					outchan <- struct{}{}
 				}
-			case <-w.Errors:
-			case <-cancel:
+			case <-w.Errors: log.Info("<<< Receive Errors >>>")
+			case <-cancel: log.Info("<<< Receive from cancel channel >>>")
 				return
 			}
 		}

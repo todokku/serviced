@@ -107,6 +107,7 @@ func WaitForAuthToken(cancel <-chan interface{}) <-chan struct{} {
 			case <-cancel: // Receive from nil channel never returns, so this is fine
 			}
 		}
+		log.Info("<<< WaitForAuthToken close(ch) >>>")
 		close(ch)
 	}()
 	return ch
@@ -206,10 +207,13 @@ func WatchTokenFile(tokenfile string, done <-chan interface{}) error {
 	loadToken()
 
 	// Now watch for changes
+	log.Info("<<< start NotifyOnChange WatchTokenFile >>>")
 	filechangechan, err := NotifyOnChange(tokenfile, fsnotify.Write|fsnotify.Create, done)
+	log.Info("<<< end NotifyOnChange WatchTokenFile >>>")
 	if err != nil {
 		return err
 	}
+	log.Info("<<< get filechanges >>>")
 	for _ = range filechangechan {
 		loadToken()
 	}

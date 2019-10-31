@@ -314,6 +314,7 @@ func WaitForDelegateKeys(cancel <-chan interface{}) <-chan struct{} {
 			case <-cancel: // Receive from nil channel never returns, so this is fine
 			}
 		}
+		log.Info("<<< WaitForDelegateKeys close(ch) >>>")
 		close(ch)
 	}()
 	return ch
@@ -343,10 +344,13 @@ func WatchDelegateKeyFile(filename string, cancel <-chan interface{}) error {
 	// Try an initial load without any file changes
 	loadKeys()
 
+	log.Info("<<< start NotifyOnChange WatchDelegateKeyFile >>>")
 	filechanges, err := NotifyOnChange(filename, fsnotify.Write|fsnotify.Create, cancel)
+	log.Info("<<< end NotifyOnChange WatchDelegateKeyFile >>>")
 	if err != nil {
 		return err
 	}
+	log.Info("<<< get filechanges >>>")
 	for _ = range filechanges {
 		loadKeys()
 	}
