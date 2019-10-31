@@ -32,6 +32,7 @@ func NotifyOnChange(filename string, ops fsnotify.Op, cancel <-chan interface{})
 		return nil, err
 	}
 	outchan := make(chan struct{})
+
 	go func() {
 		defer w.Close()
 		defer close(outchan)
@@ -49,5 +50,6 @@ func NotifyOnChange(filename string, ops fsnotify.Op, cancel <-chan interface{})
 			}
 		}
 	}()
+	log.Info("<<< NotifyOnChange run goroutine >>>")
 	return outchan, nil
 }
