@@ -309,8 +309,9 @@ func WaitForDelegateKeys(cancel <-chan interface{}) <-chan struct{} {
 	ch := make(chan struct{})
 	go func() {
 		for delegateKeys.localPrivate == nil || delegateKeys.masterPublic == nil {
+			log.Info("<<< delegateKeys.localPrivate == nil || delegateKeys.masterPublic == nil >>>")
 			select {
-			case <-dKeyCond.Wait():
+			case <-dKeyCond.Wait(): log.Info("<<< dKeyCond.Wait() >>>")
 			case <-cancel: // Receive from nil channel never returns, so this is fine
 			}
 		}
