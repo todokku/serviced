@@ -268,12 +268,7 @@ func expired() bool {
 }
 
 func updateToken(token string, expires time.Time, filename string) {
-	select {
-	case <-WaitForDelegateKeys(nil):
-	case <-time.After(1 * time.Second):
-		log.WithField("timeout", "1s").Error("No delegate keys were available to parse the token within the timeout")
-		return
-	}
+	<-WaitForDelegateKeys(nil)
 	cond.Lock()
 	log.Infof("<<< set currentToken to '%s' >>>", token)
 	currentToken = token
