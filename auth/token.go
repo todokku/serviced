@@ -101,12 +101,17 @@ func AuthTokenNonBlocking() (string, error) {
 func WaitForAuthToken(cancel <-chan interface{}) <-chan struct{} {
 	ch := make(chan struct{})
 	go func() {
-		for currentToken == "" {
-			select {
-			case <-cond.Wait():
-			case <-cancel: // Receive from nil channel never returns, so this is fine
+		for {
+			cond.RLock()
+			if currentToken != "" {
+				break
 			}
+			cond.Unlock()
+			log.Info("<<< currentToken == '' ")
+			time.Sleep(time.Second)
 		}
+		cond.Unlock()
+
 		log.Info("<<< WaitForAuthToken close(ch) >>>")
 		close(ch)
 	}()
