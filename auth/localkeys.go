@@ -314,11 +314,11 @@ func WaitForDelegateKeys(cancel <-chan interface{}) <-chan struct{} {
 			if delegateKeys.localPrivate != nil && delegateKeys.masterPublic != nil {
 				break
 			}
-			dKeyCond.Unlock()
+			dKeyCond.RUnlock()
 			log.Info("<<< delegateKeys.localPrivate == nil || delegateKeys.masterPublic == nil >>>")
 			time.Sleep(time.Second)
 		}
-		dKeyCond.Unlock()
+		dKeyCond.RUnlock()
 		log.Info("<<< WaitForDelegateKeys close(ch) >>>")
 		close(ch)
 	}()

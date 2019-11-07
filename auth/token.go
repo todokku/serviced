@@ -106,11 +106,11 @@ func WaitForAuthToken(cancel <-chan interface{}) <-chan struct{} {
 			if currentToken != "" {
 				break
 			}
-			cond.Unlock()
+			cond.RUnlock()
 			log.Info("<<< currentToken == '' ")
 			time.Sleep(time.Second)
 		}
-		cond.Unlock()
+		cond.RUnlock()
 
 		log.Info("<<< WaitForAuthToken close(ch) >>>")
 		close(ch)
