@@ -169,6 +169,9 @@ $(GOBIN)/serviced-controller: $(GOSOURCEFILES) | $(GOBIN)
 $(GOBIN)/serviced-storage: $(GOSOURCEFILES) | $(GOBIN)
 	$(GO) build $(GOBUILD_FLAGS) ${LDFLAGS} -o $@ ./tools/serviced-storage
 
+$(GOBIN)/serviced-service: $(GOSOURCEFILES) | $(GOBIN)
+	$(GO) build $(GOBUILD_FLAGS) ${LDFLAGS} -o $@ ./tools/serviced-service
+
 .PHONY: serviced
 serviced: $(GOBIN)/serviced
 
@@ -178,8 +181,11 @@ serviced-controller: $(GOBIN)/serviced-controller
 .PHONY: serviced-storage
 serviced-storage: $(GOBIN)/serviced-storage
 
+.PHONY: serviced-service
+serviced-service: $(GOBIN)/serviced-service
+
 .PHONY: go
-go: $(GOBIN)/serviced $(GOBIN)/serviced-controller $(GOBIN)/serviced-storage
+go: $(GOBIN)/serviced $(GOBIN)/serviced-controller $(GOBIN)/serviced-storage $(GOBIN)/serviced-service
 
 #
 # BUILD_VERSION is the version of the serviced-build docker image
@@ -507,6 +513,7 @@ clean_serviced:
 	rm -rf $(GOBIN)/serviced
 	rm -rf $(GOBIN)/serviced-storage
 	rm -rf $(GOBIN)/serviced-controller
+	rm -rf $(GOBIN)/serviced-service
 
 .PHONY: clean_pkg
 clean_pkg:
